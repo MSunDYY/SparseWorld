@@ -4,6 +4,8 @@ Powered by Sparse and Dynamic Queries</h3>
 
 [arXiv](https://arxiv.org/abs/2510.17482)
 
+<div align="left">
+
 ## Abstract
 
 Semantic occupancy has emerged as a powerful representation in world models for its ability to capture rich spatial
