@@ -36,6 +36,10 @@ flexibility, adaptability, and efficiency.
 
 <div align="left">
 
+## News
+- **`2025/11/8`**: SparseWorld is accepted by AAAI 2026 🎉🎉!
+- **`2025/10.10`**: The paper is released on [arXiv](https://arxiv.org/abs/2510.17482). 
+
 ## To Do
 - [√] Release Paper
 - [  ] Release Code
