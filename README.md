@@ -1,8 +1,7 @@
 <div align="center">
-<h3> SparseWorld: A Flexible, Adaptive, and Efficient 4D Occupancy World 
+<h3> [AAAI 2026] SparseWorld: A Flexible, Adaptive, and Efficient 4D Occupancy 
 
-Model
-Powered by Sparse and Dynamic Queries</h3>
+World Model Powered by Sparse and Dynamic Queries</h3>
 
 <a href="https://arxiv.org/abs/2510.17482"><img src='https://img.shields.io/badge/arXiv-Paper-red' alt='Paper PDF'></a>
 
