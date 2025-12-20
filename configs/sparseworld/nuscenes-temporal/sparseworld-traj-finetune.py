@@ -80,7 +80,7 @@ num_refines = [1, 4, 16, 24, 32, 48]
 multi_adj_frame_id_cfg = (0, num_frames, 1)
 
 pretrain = False
-finetune_epoch = 0
+finetune_epoch = 5
 point_cloud_range = [-40.0, -40.0, -1.0, 40.0, 40.0, 5.4]
 img_backbone = dict(
     type='ResNet',

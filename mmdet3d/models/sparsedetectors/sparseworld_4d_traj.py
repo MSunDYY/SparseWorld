@@ -11,7 +11,7 @@ from mmcv.cnn.bricks.transformer import MultiheadAttention
 from torch import nn
 import numpy as np
 from mmdet3d.models import builder
-from .opus_transformer import OPUSSelfAttention, OPUSCrossAttention, DropOPUSSelfAttention
+from .opus_transformer import OPUSSelfAttention, OPUSCrossAttention
 from mmcv.cnn import bias_init_with_prob
 from mmdet3d.models.detectors.loss import CE_ssc_loss, sem_scal_loss, geo_scal_loss, l1_loss, l2_loss
 from mmdet3d.models.detectors.lovasz_softmax import lovasz_softmax
@@ -69,7 +69,7 @@ class SparseWorld4DTraj(OPUS):
         self.num_refines = self.pts_bbox_head.transformer.num_refines[-1]
         self.balance_cls_weight = balance_cls_weight
         self.final_softplus = final_softplus
-        self.if_pretrain = if_pretrain
+        # self.if_pretrain = if_pretrain
         self.if_render = if_render
         self.if_post_finetune = if_post_finetune
         self.empty_idx = empty_idx
@@ -96,9 +96,6 @@ class SparseWorld4DTraj(OPUS):
             nn.ReLU(inplace=True),
             nn.Linear(256, self.out_dim)
         )
-
-        # self.update_current_query=DropOPUSSelfAttention(self.out_dim, 8, 0.1, self.num_refines, self.pts_bbox_head.pc_range,
-        #                           num_out_query=num_out_query)
         self.ego_cross_attn = OPUSCrossAttention(self.out_dim, 8, drop_out, self.pts_bbox_head.pc_range)
 
         self.position_encoder = nn.Sequential(
@@ -139,7 +136,6 @@ class SparseWorld4DTraj(OPUS):
             nn.Linear(64,32),
             nn.ReLU(),
             nn.Linear(32,3),
-
         )
 
         self.traj_head = nn.Sequential(
@@ -152,8 +148,7 @@ class SparseWorld4DTraj(OPUS):
         self.box_mode_3d = Box3DMode.LIDAR
         self.planning_metric = None
         self.finetune_epoch = finetune_epoch
-        if torch.cuda.get_device_name(0).endswith('PCIe'):
-            self.pseudo_tensor = torch.zeros(3000,1000,2000).cuda()
+
         self.pred_num = torch.zeros(18).cuda()
 
         self.gt_traj = list()
@@ -180,58 +175,6 @@ class SparseWorld4DTraj(OPUS):
 
             self.pts_bbox_head.reset_mask()
 
-    def loss_sup(self, pred, tag, cls_num, ego_interval):
-        sup_pred = torch.ones_like(pred).to(pred.device)
-        loss_sup = nn.CrossEntropyLoss(reduction="mean")(pred.reshape(-1, cls_num), sup_pred.reshape(-1, cls_num))
-
-        loss_ = dict()
-        loss_[f'loss_sup_{tag}_{str(ego_interval)}s'] = loss_sup * 0.
-
-        return loss_
-
-    def loss_sup_occupancy(self, output_voxels, target_voxels, ego_interval):
-        loss_dict = dict()
-        cls_weights = torch.cat([self.class_weights, torch.tensor([0])])
-        loss_dict[f'loss_sup_voxel_{str(ego_interval)}s'] = CE_ssc_loss(output_voxels, target_voxels,
-                                                                        cls_weights.type_as(output_voxels), 255) * 0.
-
-        return loss_dict
-
-    def loss_voxel(self, output_voxels, target_voxels, ego_interval, camera_mask=None):
-        output_voxels[torch.isnan(output_voxels)] = 0
-        output_voxels[torch.isinf(output_voxels)] = 0
-        assert torch.isnan(output_voxels).sum().item() == 0
-        assert torch.isnan(target_voxels).sum().item() == 0
-
-        loss_dict = {}
-
-        if self.use_focal_loss:
-            cls_weights = torch.cat([self.class_weights, torch.tensor([0])])
-            loss_voxel_ce = self.weight_voxel_ce * self.focal_loss(output_voxels, target_voxels,
-                                                                   cls_weights.type_as(output_voxels), 255,
-                                                                   camera_mask=camera_mask)
-        else:
-            cls_weights = torch.cat([self.class_weights, torch.tensor([0])])
-            loss_voxel_ce = self.weight_voxel_ce * CE_ssc_loss(output_voxels, target_voxels,
-                                                               cls_weights.type_as(output_voxels), 255)
-
-        loss_voxel_sem = self.weight_voxel_sem_scal * sem_scal_loss(output_voxels, target_voxels, 255,
-                                                                    camera_mask=camera_mask)
-        loss_voxel_geo = self.weight_voxel_geo_scal * geo_scal_loss(output_voxels, target_voxels, 255,
-                                                                    non_empty_idx=self.empty_idx,
-                                                                    camera_mask=camera_mask)
-        loss_voxel_lovasz = self.weight_voxel_lovasz * lovasz_softmax(torch.softmax(output_voxels, dim=1),
-                                                                      target_voxels, ignore=self.empty_idx,
-                                                                      camera_mask=camera_mask)
-
-        # total_loss = loss_voxel_ce + loss_voxel_sem + loss_voxel_geo + loss_voxel_lovasz
-        loss_dict[f'loss_voxel_ce_{str(ego_interval)}s'] = loss_voxel_ce
-        loss_dict[f'loss_voxel_sem_{str(ego_interval)}s'] = loss_voxel_sem
-        loss_dict[f'loss_voxel_geo_{str(ego_interval)}s'] = loss_voxel_geo
-        loss_dict[f'loss_voxel_lovasz_{str(ego_interval)}s'] = loss_voxel_lovasz
-        # loss_dict[f'loss_voxel_{str(ego_interval)}s'] = total_loss
-
-        return loss_dict
 
     def trans_points(self, points_proposal, points_delta, trans_matrix):
 
@@ -283,42 +226,28 @@ class SparseWorld4DTraj(OPUS):
         bs, _, dim_ = ego_states.shape
         ego_states = ego_states.view((bs, 1, dim_))
         ego_feat = self.plan_head(ego_states)
-        # ego_states = self.ego_cross_attn(ego_states)
-
         points_scale = self.points_scale_branch(ego_feat)
         points_scale = torch.tanh(points_scale)
         self.pts_bbox_head.points_scale = (points_scale + 1) / 2 * (1.5 - 0.8) + 0.8
-        self.gt_traj.append(kwargs['temporal_trajs'][0,:3].mean(0)*2)
-        self.tau.append(self.pts_bbox_head.points_scale.squeeze())
 
-        if False:
-            ego_states = ego_states * 0
-
-        if False:
-            vel_points = torch.stack(self.gt_traj, dim=0).cpu()[:,[1,0]].numpy()
-            tau_points = torch.stack(self.tau, dim=0).cpu().numpy()
         if self.training:
             img_feats = self.extract_feat(img, img_metas)
             outs = self.pts_bbox_head(img_feats, img_metas)
         else:
             outs = self.simple_test_online(img_metas,img)
 
-
         ind_stamps_all = self.pts_bbox_head.ind_stamps_all
         query_feat = outs['query_feat']
         query_pos = outs['all_refine_pts'][-1]
         query_cls = outs['all_cls_scores'][-1]
 
-
         curr_query_feat = query_feat[:, ind_stamps_all == 0]
         curr_query_pos = query_pos[:, ind_stamps_all == 0].detach()
         curr_query_timestamp = query_pos.new_zeros(B,self.num_query,self.num_refines,1)
         curr_query_cls = query_cls[:,ind_stamps_all==0]
-
         outputs = dict(cls_score = curr_query_cls,
                        refine_pts = curr_query_pos,
                        outs = outs)
-
 
         forecast_points_list = list()
         forecast_semantics_list = list()
@@ -329,16 +258,12 @@ class SparseWorld4DTraj(OPUS):
         else:
             num_fu_frames = self.num_fu_frames
 
-
-
         for interval in range(num_fu_frames):
             # fu_query_feat = outs['fu_query_feat'].reshape(B,self.num_fu_frames,self.num_fu_query,self.out_dim)
             fused_ego_feat,_ = self.ego_cross_attn(ego_feat.new_ones(B, 1, 3)*0.5, ego_feat, curr_query_pos.detach(),
                                                     curr_query_feat.detach(), )
             pred_traj = self.traj_head(fused_ego_feat)
             pred_trajs_list.append(pred_traj)
-            if False:
-                pred_traj = kwargs['temporal_trajs'][:, interval:interval + 1, :]
 
             curr_query_feat = torch.cat([curr_query_feat, query_feat[:, ind_stamps_all == interval + 1]], dim=1)
             curr_query_pos = torch.cat([curr_query_pos, query_pos[:, ind_stamps_all == interval + 1]],
@@ -371,18 +296,6 @@ class SparseWorld4DTraj(OPUS):
                 gt_points = self.trans_points(curr_query_pos.flatten(1, 2), pred_traj_expand, ego2lidar).reshape(
                     curr_query_pos.shape)
                 forecast_points_mask_list.append(gt_points[..., 0] >= 0)
-            # curr_query_pos = self.trans_points(curr_query_pos.flatten(1, 2), pred_traj_expand, ego2lidar).reshape(
-            #     curr_query_pos.shape)
-            # query_pos = self.trans_points(query_pos.flatten(1, 2), pred_traj_expand, ego2lidar).reshape(query_pos.shape)
-
-            if False:
-                accumulated_score = cls_score.max(-1)[0].sum(-1)
-                sampled_inds = torch.topk(accumulated_score, 600, 1)[1]
-                cls_score = torch.gather(cls_score, 1, sampled_inds[:, :, None, None].repeat(1, 1, 128, 17))
-
-                curr_query_feat = torch.gather(curr_query_feat, 1, sampled_inds[:, :, None].repeat(1, 1, 256))
-                curr_query_pos = torch.gather(curr_query_pos, 1, sampled_inds[:, :, None, None].repeat(1, 1, 128, 3))
-
 
         if not self.pretrain and len(pred_trajs_list)<self.num_fu_frames :
             fused_ego_feat,_ = self.ego_cross_attn(ego_feat.new_zeros(B, 1, 3), ego_feat, curr_query_pos,
@@ -395,10 +308,7 @@ class SparseWorld4DTraj(OPUS):
                        forecast_points_list = forecast_points_list,
                        pred_trajs_list = pred_trajs_list,
                        forecast_points_mask_list = forecast_points_mask_list))
-
         return outputs
-
-
 
     def simple_test(self,
                     img_metas,
@@ -415,7 +325,7 @@ class SparseWorld4DTraj(OPUS):
 
         pred_dict = dict(cls_scores=outs['all_cls_scores'][-1][:,self.pts_bbox_head.ind_stamps_all==0], refine_pts=outs['all_refine_pts'][-1][:,self.pts_bbox_head.ind_stamps_all==0])
         occ_pred = self.pts_bbox_head.get_occ(pred_dict)[0]
-        self.pred_num += torch.bincount(occ_pred.flatten())
+        # self.pred_num += torch.bincount(occ_pred.flatten())
         geo_pred = torch.ones_like(occ_pred) * 17
         geo_pred[occ_pred != 17] = 0
         res_dict = {f'semantic_occ_0s': [occ_pred.cpu().numpy()],
@@ -427,7 +337,6 @@ class SparseWorld4DTraj(OPUS):
         for interval in range(self.num_fu_frames):
             input_dict = dict(cls_scores=forecast_semantics_list[interval],
                               refine_pts=forecast_points_list[interval])
-
             occ_forecast = self.pts_bbox_head.get_occ(input_dict)[0]  # eval for single batch
             geo_forecast = torch.ones_like(occ_forecast) * 17
             geo_forecast[occ_forecast != 17] = 0
@@ -440,7 +349,6 @@ class SparseWorld4DTraj(OPUS):
         res_dict['pred_traj'] = torch.cat(pred_trajs_list, 1)
         return res_dict
 
-
     def forward_train(self,
                       points=None,
                       img_metas=None,
@@ -451,10 +359,7 @@ class SparseWorld4DTraj(OPUS):
 
         temporal_semantics = kwargs['temporal_semantics']
         B = img.shape[0]
-
         temporal2ego = kwargs['temporal2ego']
-        #
-
         outputs = self.forward_backbone(img,img_metas,**kwargs)
         cls_score,refine_pts,outs = outputs['cls_score'],outputs['refine_pts'],outputs['outs']
 
@@ -462,11 +367,11 @@ class SparseWorld4DTraj(OPUS):
         ind_stamps_all = self.pts_bbox_head.ind_stamps_all
         if self.pretrain:
             loss_inputs = [voxel_semantics, temporal_semantics, temporal2ego, outs]
-            losses.update(self.pts_bbox_head.loss_pretrain1(*loss_inputs))
+            losses.update(self.pts_bbox_head.loss_pretrain(*loss_inputs))
         else:
             # outs_inits = dict(init_points = outs['init_points'],all_cls_scores = [], all_refine_pts = [])
             loss_inputs = [voxel_semantics, temporal_semantics, temporal2ego, outs]
-            losses.update(self.pts_bbox_head.loss_pretrain1(*loss_inputs))
+            losses.update(self.pts_bbox_head.loss_pretrain(*loss_inputs))
             outs['init_points'] = None
             for i in range(len(outs['all_cls_scores'])):
                 outs['all_cls_scores'][i] = outs['all_cls_scores'][i][:,ind_stamps_all==0]

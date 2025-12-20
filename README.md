@@ -4,7 +4,7 @@
 World Model Powered by Sparse and Dynamic Queries</h3>
 
 <a href="https://arxiv.org/abs/2510.17482"><img src='https://img.shields.io/badge/arXiv-Paper-red' alt='Paper PDF'></a>
-
+[![Huggingface](https://img.shields.io/badge/Huggingface-Model-yellow?logo=Huggingface)](https://huggingface.co/MSunDYY2001/SparseWorld/tree/main)
 <div align="left">
 
 ## Abstract
@@ -36,6 +36,7 @@ flexibility, adaptability, and efficiency.
 <div align="left">
 
 ## News
+- **`2025/12/20`**: We release the inference and training code as well as the pretrained weight!
 - **`2025/11/8`**: SparseWorld is accepted by AAAI 2026 🎉🎉!
 - **`2025/10.10`**: The paper is released on [arXiv](https://arxiv.org/abs/2510.17482). 
 
@@ -44,29 +45,21 @@ flexibility, adaptability, and efficiency.
 - [√] Release Code
 
 ## Getting Started
-**a. Create a virtual environment**
-```
-cd SparseWorld
-python3.9 -m venv env
-source env/bin/activate
-```
+- [Installation](docs/install.md)
 
-**b. Download some core packages**
-```
-pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
-pip install -v -e .
-pip install -r requirements.txt
-```
+- [Prepare Dataset](docs/prepare_datasets.md)
 
-**c. Test**
-```
-python tools/test.py configs/preworld/nuscenes-temporal/sparse-occ-traj-finetune.py work_dirs/sparseworld-7frame-finetune-epoch56-new/epoch_56.pth
-```
+- [Train and Eval](docs/getting_started.md)
 
-**d. Train**
-```
-bash ./tools/dist_train.sh ./configs/preworld/nuscenes-temporal/sparse-occ-traj-finetune.py 8
-```
+
+
+## Acknowledgement
+
+Our code is developed based of following open source codebases:
+- [OPUS](https://github.com/jbwang1997/OPUS)
+- [PreWorld](https://github.com/getterupper/PreWorld)
+
+We sincerely appreciate their outstanding works.
 
 ## Citation
 If this work is helpful for your research, please consider citing:
@@ -79,13 +72,3 @@ If this work is helpful for your research, please consider citing:
   year={2025}
 }
 ```
-
-
-
-## Acknowledge
-
-Our code is developed based of following open source codebase:
-- [OPUS](https://github.com/jbwang1997/OPUS)
-- [PreWorld](https://github.com/getterupper/PreWorld)
-
-We sincerely appreciate their outstanding works.

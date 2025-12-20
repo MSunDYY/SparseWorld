@@ -195,11 +195,6 @@ class OPUSHead(BaseModule):
             label_weights = label_weights * torch.clamp(1/dis,max=1,min=0.4)
             gt_pts_weights[(gt_labels>=15) | (gt_labels==11)] *=0.5
 
-        # rare_classes = self.train_cfg.get('rare_classes', [0, 2, 5, 8])
-        # rare_weights = self.train_cfg.get('rare_weights', 4)
-        # for cls_idx in rare_classes:
-        #     mask = (gt_labels == cls_idx)
-        #     gt_pts_weights[mask] = gt_pts_weights[mask].clamp(min=rare_weights)
 
         return (refine_pts_labels, gt_paired_idx, pred_paired_idx, label_weights,
                 gt_pts_weights)
@@ -244,13 +239,6 @@ class OPUSHead(BaseModule):
          gt_pts_weights) = multi_apply(
             self._get_target_single, refine_pts_list, gt_points_list,
              gt_labels_list)
-
-
-
-        # mask = cls_scores.new_zeros(num_imgs, num_query, num_pts)
-        # mask[:, -self.num_fu_query:] = 1
-        # mask = mask.reshape(-1, 1)
-        # dist_mask = [dist_loss_weight(gt_points) for gt_points in gt_points_list]
 
         gt_paired_pts, pred_paired_pts, gt_weights,pred_paired_stamps = [], [], [], []
         for i in range(num_imgs):
@@ -445,7 +433,7 @@ class OPUSHead(BaseModule):
             time_stamp += 1
         return loss_dict
 
-    def loss_pretrain1(self,voxel_semantic,temporal_semantics,temporal2ego, pred_dicts):
+    def loss_pretrain(self,voxel_semantic,temporal_semantics,temporal2ego, pred_dicts):
         B = voxel_semantic.shape[0]
         loss = dict()
 
@@ -464,29 +452,9 @@ class OPUSHead(BaseModule):
 
 
         loss.update(self.loss_stack(voxel_semantic_stack,pred_dict,time_stamp = 0,voxel_stamp=voxel_stamp_stack))
-        # from vis_occ import show_occ
-        # pred = temporal_semantics[6]['voxel_semantics'][0].cpu()
-        # show_occ(pred.clone(), pred != 17, [0.4, 0.4, 0.4], offset=[0, 0, 0], voxelize=False, show_occ=True)
+        
         return loss
 
-
-    # def loss_pretrain(self,voxel_semantic,temporal_semantics,temporal2ego, pred_dicts):
-    #     B = voxel_semantic.shape[0]
-    #     loss = dict()
-    #
-    #     init_points_all = pred_dicts['init_points']
-    #
-    #     pred_dict = {'init_points': init_points_all,
-    #                  'all_cls_scores': list(),
-    #                  'all_refine_pts': list(),
-    #                  'all_pred_stamps': list()}
-    #
-    #     voxel_semantic_stack, voxel_stamp_stack = self.get_sparse_voxels_stack(voxel_semantic, temporal_semantics,
-    #                                                                            temporal2ego)
-    #
-    #     loss.update(self.loss_stack(voxel_semantic_stack, pred_dict, time_stamp=0, voxel_stamp=voxel_stamp_stack))
-    #
-    #     return loss
 
     def loss_stack(self, voxel_semantics, preds_dicts, time_stamp=0,temporal2ego=None,voxel_stamp=None):
         # voxelsemantics [B, X200, Y200, Z16] unocuupied=17
@@ -631,15 +599,10 @@ class OPUSHead(BaseModule):
                 dilated_occ = F.max_pool3d(occ, 3, stride=1, padding=1)
                 eroded_occ = -F.max_pool3d(-dilated_occ, 3, stride=1, padding=1)
 
-                # eroded_occ = dilated_occ
-                # repalce with original occ prediction
-                # original_mask = (occ > score_thr).any(dim=1, keepdim=True)
                 max_score,index = occ.max(1)
                 original_mask = (max_score > score_thr[index]) #| (eroded_occ.argmax(1)==15 )
                 original_mask = original_mask.expand_as(eroded_occ)
                 eroded_occ[original_mask] = occ[original_mask]
-                # eroded_occ
-
             else:
                 eroded_occ = occ
                 # eroded_occ = occ[0].permute(1,2,3,0)

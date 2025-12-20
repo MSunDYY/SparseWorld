@@ -34,7 +34,7 @@ torch.multiprocessing.set_start_method('spawn')
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
-    parser.add_argument('--config',default='./configs/preworld/nuscenes-temporal/sparse-occ-traj-finetune-72pts.py', help='train config file path')
+    parser.add_argument('config', help='train config file path')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
         '--resume-from',default='', help='the checkpoint file to resume from')

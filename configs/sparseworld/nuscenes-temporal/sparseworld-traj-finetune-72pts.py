@@ -63,11 +63,6 @@ embed_dims = 256
 num_layers = 6
 num_query = 720
 num_fu_query = [60,60,60,60,40,40]
-# num_query = 720
-# num_fu_query = [30,30,40,40,50,50]
-
-# num_query = 1440
-# num_fu_query = [60,60,60,60,40,40]
 
 num_frames = 5
 num_fu_frames = 6
@@ -80,7 +75,7 @@ num_refines = [1, 4, 16, 36, 48, 72]
 multi_adj_frame_id_cfg = (0, num_frames, 1)
 
 pretrain = False
-finetune_epoch = 0
+finetune_epoch = 5
 point_cloud_range = [-40.0, -40.0, -1.0, 40.0, 40.0, 5.4]
 img_backbone = dict(
     type='ResNet',
