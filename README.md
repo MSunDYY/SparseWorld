@@ -5,6 +5,18 @@ World Model Powered by Sparse and Dynamic Queries</h3>
 
 <a href="https://arxiv.org/abs/2510.17482"><img src='https://img.shields.io/badge/arXiv-Paper-red' alt='Paper PDF'></a>
 [![Huggingface](https://img.shields.io/badge/Huggingface-Model-yellow?logo=Huggingface)](https://huggingface.co/MSunDYY2001/SparseWorld/tree/main)
+
+
+<div align="center">
+
+[Chenxu Dang](https://msundyy.github.io)<sup>1,2\*</sup>, Haiyan Liu<sup>3</sup>, Jason Bao<sup>3</sup>, Pei An<sup>1</sup>, Xinyue Tang<sup>3</sup>, PanAn<sup>4</sup>, Jie Ma<sup>1†</sup>, \
+Bingchuan Sun<sup>3†</sup>, Yan Wang<sup>2†</sup>  
+
+
+<sup>1</sup>Huazhong University of Science and Technology  
+<sup>2</sup>Institute for AI Industry Research (AIR), Tsing University <sup>3</sup>Lenove Group Limited\
+<sup>4</sup>AIR Wuxi Innovation Center, Tsinghua University (AIRIC)
+
 <div align="left">
 
 ## Abstract
@@ -29,7 +41,6 @@ flexibility, adaptability, and efficiency.
 
 ## Overview
 
-
 <img src="./pics/overview.png" width="1000">
 </div>
 
@@ -40,9 +51,7 @@ flexibility, adaptability, and efficiency.
 - **`2025/11/8`**: SparseWorld is accepted by AAAI 2026 🎉🎉!
 - **`2025/10.10`**: The paper is released on [arXiv](https://arxiv.org/abs/2510.17482). 
 
-## To Do
-- [√] Release Paper
-- [√] Release Code
+
 
 ## Getting Started
 - [Installation](docs/install.md)
@@ -50,6 +59,16 @@ flexibility, adaptability, and efficiency.
 - [Prepare Dataset](docs/prepare_datasets.md)
 
 - [Train and Eval](docs/getting_started.md)
+
+## Results and Visualizations
+
+- Results
+<div align="left">
+<img src="./pics/results.png" width="6000">
+
+- Comparative Visualizations
+
+<img src="./pics/vis.png" width="6000">
 
 
 
@@ -62,6 +81,9 @@ Our code is developed based of following open source codebases:
 We sincerely appreciate their outstanding works.
 
 ## Citation
+
+If you find our work helpful or interesting, don’t forget to give us a ⭐. Thanks for your support!
+
 If this work is helpful for your research, please consider citing:
 
 ```

@@ -1,9 +1,17 @@
+
+# Environment Setup
+
+This project uses **CUDA 11.8** and recommends **venv** for environment management. 
+
+
 **a. Create a virtual environment**
 ```
 cd SparseWorld
 python3.9 -m venv env
 source env/bin/activate
 ```
+
+**Conda** is also completely feasible, with only the difference being in the creation of the environment.
 
 **b. Download and compile some core packages**
 ```

@@ -222,7 +222,7 @@ class NuScenesDatasetOccpancy4DTraj(NuScenesDataset):
         data_infos = list(sorted(data['infos'], key=lambda e: e['timestamp']))
         infos = []
 
-        # data_infos = data_infos[:39]
+        # data_infos = data_infos[:39] #for debug
         self.metadata = data['metadata']
         self.version = self.metadata['version']
 
@@ -553,7 +553,7 @@ class NuScenesDatasetOccpancy4DTraj(NuScenesDataset):
             self.occ_eval_metrics.add_batch(occ_pred, gt_semantics_temp, mask_lidar_temp, mask_camera_temp)
 
         if pred_trajs is not None:
-            with open('data/output_data1.pkl', 'wb') as f:
+            with open('admlp/output_data.pkl', 'wb') as f:
                 pickle.dump(out_pkl, file=f)
         iou_res_list = self.occ_eval_metrics.count_iou()
         mIoU_1s, miou_res_list = self.occ_eval_metrics.count_miou()

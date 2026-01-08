@@ -1,4 +1,5 @@
 ## Prepare nuScenes Dataset
+Please organize the dataset and the necessary files according to the following directory structure.
 
 step 1: Download nuScenes V1.0 full dataset data from [HERE](https://www.nuscenes.org/download) on `./data/nuscenes`.
 
@@ -17,6 +18,7 @@ step 6 Download pkl files preprocessed by admlp and occworld from [Huggingface](
 SparseWorld
 ├── mmdet3d/
 ├── tools/
+├── env/
 ├── configs/
 ├── ckpts/
 │   ├── epoch_56.pth
@@ -42,4 +44,11 @@ SparseWorld
 │       ├── stp3_occupancy.pkl
 │       └── stp3_traj_gt.pkl
 
+```
+
+Then, create a symbolic link for the planning evaluation.
+```
+cd AD-MLP/pytorch/admlp
+ln -s ../../../admlp/stp3_val stp3_val
+cd ../../..
 ```
