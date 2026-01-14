@@ -244,7 +244,7 @@ test_data_config = dict(
 
 data = dict(
     samples_per_gpu=2,  # with 32 GPU, Batch Size=32
-    workers_per_gpu=6,
+    workers_per_gpu=4,
     train=dict(
         data_root=data_root,
         ann_file=data_root + 'bevdetv2-nuscenes_infos_train.pkl',
@@ -272,8 +272,13 @@ lr_config = dict(
     min_lr_ratio=1e-3
 )
 
-runner = dict(type='EpochBasedRunner', max_epochs=16)
+checkpoint_config = dict(
+    interval=1,  
+    max_keep_ckpts=5,   
+    save_last=True     
+)
 
+runner = dict(type='EpochBasedRunner', max_epochs=64)
 # custom hooks
 custom_hooks = [dict(type='CustomSetEpochInfoHook')]
 

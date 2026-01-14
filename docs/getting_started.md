@@ -4,7 +4,7 @@ We recommend training with 4 or 8 GPUs, each with at least 24 GB of memory. Note
 
 **a. Train**
 ```
-bash ./tools/dist_train.sh ./configs/sparseworld/nuscenes-temporal/sparse-occ-traj-finetune.py 8
+bash ./tools/dist_train.sh ./configs/sparseworld/nuscenes-temporal/sparseworld-traj-finetune.py 8
 ```
 
 **b. Test**
