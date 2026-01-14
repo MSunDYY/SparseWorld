@@ -47,6 +47,7 @@ flexibility, adaptability, and efficiency.
 <div align="left">
 
 ## News
+- **`2026/1/13`**: We’ve released an upgraded version of SparseWorld, called SparseOccVLA ([code](https://github.com/MSunDYY/SparseOccVLA), [paper](https://arxiv.org/abs/2601.06474)), which successfully integrates sparse occupancy queries into LLMs. Feel free to check it out!
 - **`2025/12/20`**: We release the inference and training code as well as the pretrained weight!
 - **`2025/11/8`**: SparseWorld is accepted by AAAI 2026 🎉🎉!
 - **`2025/10.10`**: The paper is released on [arXiv](https://arxiv.org/abs/2510.17482). 
@@ -60,6 +61,15 @@ flexibility, adaptability, and efficiency.
 
 - [Train and Eval](docs/getting_started.md)
 
+
+## Model Zoo
+
+
+|          Method           |                            Config                            | Avg mIoU | Avg IoU |  log  | Checkpoints |
+| :-----------------------: | :----------------------------------------------------------: | :------: | :-----: | :---: | :---------: |
+| SparseWorld-R50               | [config](configs/sparseworld/nuscenes-temporal/sparseworld-traj-finetune.py) | 13.20 | 22.03 | [log](https://huggingface.co/MSunDYY2001/SparseWorld/blob/main/20260113_074102.log) | [model](https://huggingface.co/MSunDYY2001/SparseWorld/tree/main/ckpts) |
+
+Here, the model was trained on 8 H20 GPUs, while it only uses about 17 GB of GPU memory in practice, which means our results can be reproduced on consumer-grade GPUs such as the RTX 4090.
 ## Results and Visualizations
 
 - Results
@@ -92,5 +102,13 @@ If this work is helpful for your research, please consider citing:
   author={Dang, Chenxu and Liu, Haiyan and Bao, Guangjun and An, Pei and Tang, Xinyue and Ma, Jie and Sun, Bingchuan and Wang, Yan},
   journal={arXiv preprint arXiv:2510.17482},
   year={2025}
+}
+```
+```
+@article{dang2026sparseoccvla,
+  title={SparseOccVLA: Bridging Occupancy and Vision-Language Models via Sparse Queries for Unified 4D Scene Understanding and Planning}, 
+  author={Dang, Chenxu and Wang, Jie and Guang, Li and Zihan, You and Hangjun, Ye and Jie, Ma and Long, Chen and Yan, Wang},
+  journal={arXiv preprint arXiv:2601.06474},
+  year={2026}
 }
 ```
